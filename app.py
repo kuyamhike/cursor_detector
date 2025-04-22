@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import pyautogui as pt
 from pynput.mouse import Button, Listener #gumamit ako neto kahit wala ka sinabi cause di ko alam pano malaman kung nagclick yung mouse
+import json
 
 app = Flask(__name__)
 
@@ -21,17 +22,23 @@ def get_cursor():
         "position-x": x,
         "position-y": y,
         "is_dragging": is_dragging #returns the output para lumabas
-    }) 
+    })
 
 @app.route('/cursorpost', methods=['POST'])
 def post_cursor():
     data = request.json
-    x = data.get('x') #ngayon ko lang nalaman na di pala pede gumamit ng int(input) dito HSHHSAH
+    x = data.get('x')
     y = data.get('y')
-    pt.moveTo(x, y)   #para lumipat sya based sa pinalitan ng user, sa postman
+
+    pt.moveTo(x, y)
+
+    with open('index.json', 'a') as boss_jayson:
+        json.dump({"x": x,"y": y,}, boss_jayson)
+
     return jsonify({
-        "move to": {"x": x, "y": y} #para maoutput
+        "move to": {"x": x, "y": y,}
     })
+
 
 @app.route('/cursorpost', methods=['PUT']) 
 def put_cursor():
@@ -45,6 +52,8 @@ def put_cursor():
 def delete_cursor():
     global is_dragging  
     pt.moveTo(0, 0)
+    with open('index.json', 'w') as boss_jayson:
+        json.dump([], boss_jayson)
     is_dragging = False
     return jsonify({
         "position-x": 0,
